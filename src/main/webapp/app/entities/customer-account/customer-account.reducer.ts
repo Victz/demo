@@ -1,0 +1,144 @@
+import axios from 'axios';
+import { ICrudGetAction, ICrudGetAllAction, ICrudPutAction, ICrudDeleteAction } from 'react-jhipster';
+
+import { cleanEntity } from 'app/shared/util/entity-utils';
+import { REQUEST, SUCCESS, FAILURE } from 'app/shared/reducers/action-type.util';
+
+import { ICustomerAccount, defaultValue } from 'app/shared/model/customer-account.model';
+
+export const ACTION_TYPES = {
+  FETCH_CUSTOMERACCOUNT_LIST: 'customerAccount/FETCH_CUSTOMERACCOUNT_LIST',
+  FETCH_CUSTOMERACCOUNT: 'customerAccount/FETCH_CUSTOMERACCOUNT',
+  CREATE_CUSTOMERACCOUNT: 'customerAccount/CREATE_CUSTOMERACCOUNT',
+  UPDATE_CUSTOMERACCOUNT: 'customerAccount/UPDATE_CUSTOMERACCOUNT',
+  DELETE_CUSTOMERACCOUNT: 'customerAccount/DELETE_CUSTOMERACCOUNT',
+  RESET: 'customerAccount/RESET',
+};
+
+const initialState = {
+  loading: false,
+  errorMessage: null,
+  entities: [] as ReadonlyArray<ICustomerAccount>,
+  entity: defaultValue,
+  updating: false,
+  updateSuccess: false,
+};
+
+export type CustomerAccountState = Readonly<typeof initialState>;
+
+// Reducer
+
+export default (state: CustomerAccountState = initialState, action): CustomerAccountState => {
+  switch (action.type) {
+    case REQUEST(ACTION_TYPES.FETCH_CUSTOMERACCOUNT_LIST):
+    case REQUEST(ACTION_TYPES.FETCH_CUSTOMERACCOUNT):
+      return {
+        ...state,
+        errorMessage: null,
+        updateSuccess: false,
+        loading: true,
+      };
+    case REQUEST(ACTION_TYPES.CREATE_CUSTOMERACCOUNT):
+    case REQUEST(ACTION_TYPES.UPDATE_CUSTOMERACCOUNT):
+    case REQUEST(ACTION_TYPES.DELETE_CUSTOMERACCOUNT):
+      return {
+        ...state,
+        errorMessage: null,
+        updateSuccess: false,
+        updating: true,
+      };
+    case FAILURE(ACTION_TYPES.FETCH_CUSTOMERACCOUNT_LIST):
+    case FAILURE(ACTION_TYPES.FETCH_CUSTOMERACCOUNT):
+    case FAILURE(ACTION_TYPES.CREATE_CUSTOMERACCOUNT):
+    case FAILURE(ACTION_TYPES.UPDATE_CUSTOMERACCOUNT):
+    case FAILURE(ACTION_TYPES.DELETE_CUSTOMERACCOUNT):
+      return {
+        ...state,
+        loading: false,
+        updating: false,
+        updateSuccess: false,
+        errorMessage: action.payload,
+      };
+    case SUCCESS(ACTION_TYPES.FETCH_CUSTOMERACCOUNT_LIST):
+      return {
+        ...state,
+        loading: false,
+        entities: action.payload.data,
+      };
+    case SUCCESS(ACTION_TYPES.FETCH_CUSTOMERACCOUNT):
+      return {
+        ...state,
+        loading: false,
+        entity: action.payload.data,
+      };
+    case SUCCESS(ACTION_TYPES.CREATE_CUSTOMERACCOUNT):
+    case SUCCESS(ACTION_TYPES.UPDATE_CUSTOMERACCOUNT):
+      return {
+        ...state,
+        updating: false,
+        updateSuccess: true,
+        entity: action.payload.data,
+      };
+    case SUCCESS(ACTION_TYPES.DELETE_CUSTOMERACCOUNT):
+      return {
+        ...state,
+        updating: false,
+        updateSuccess: true,
+        entity: {},
+      };
+    case ACTION_TYPES.RESET:
+      return {
+        ...initialState,
+      };
+    default:
+      return state;
+  }
+};
+
+const apiUrl = 'api/customer-accounts';
+
+// Actions
+
+export const getEntities: ICrudGetAllAction<ICustomerAccount> = (page, size, sort) => ({
+  type: ACTION_TYPES.FETCH_CUSTOMERACCOUNT_LIST,
+  payload: axios.get<ICustomerAccount>(`${apiUrl}?cacheBuster=${new Date().getTime()}`),
+});
+
+export const getEntity: ICrudGetAction<ICustomerAccount> = id => {
+  const requestUrl = `${apiUrl}/${id}`;
+  return {
+    type: ACTION_TYPES.FETCH_CUSTOMERACCOUNT,
+    payload: axios.get<ICustomerAccount>(requestUrl),
+  };
+};
+
+export const createEntity: ICrudPutAction<ICustomerAccount> = entity => async dispatch => {
+  const result = await dispatch({
+    type: ACTION_TYPES.CREATE_CUSTOMERACCOUNT,
+    payload: axios.post(apiUrl, cleanEntity(entity)),
+  });
+  dispatch(getEntities());
+  return result;
+};
+
+export const updateEntity: ICrudPutAction<ICustomerAccount> = entity => async dispatch => {
+  const result = await dispatch({
+    type: ACTION_TYPES.UPDATE_CUSTOMERACCOUNT,
+    payload: axios.put(apiUrl, cleanEntity(entity)),
+  });
+  return result;
+};
+
+export const deleteEntity: ICrudDeleteAction<ICustomerAccount> = id => async dispatch => {
+  const requestUrl = `${apiUrl}/${id}`;
+  const result = await dispatch({
+    type: ACTION_TYPES.DELETE_CUSTOMERACCOUNT,
+    payload: axios.delete(requestUrl),
+  });
+  dispatch(getEntities());
+  return result;
+};
+
+export const reset = () => ({
+  type: ACTION_TYPES.RESET,
+});

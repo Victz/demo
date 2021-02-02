@@ -1,0 +1,45 @@
+entity Customer {
+	id String required 
+    cifNumber String required
+	firstName String required minlength(2) pattern(/^[A-Za-z]+$/)
+    middleName String pattern(/^[A-Za-z]+$/)
+    lastName String required minlength(2) pattern(/^[A-Za-z]+$/)
+    phone String required pattern(/^(9|8)\d{7}$/)
+    email String pattern(/^[_A-Za-z0-9-\+]+(\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$/) 
+    dateOfBirth LocalDate required
+    createdBy String
+    createDate LocalDate
+    updateBy String
+    updateDate LocalDate
+}
+
+entity CustomerAccount {
+	id String required 
+	accountNumber String required
+    currency String required
+    accountName String required
+    balance BigDecimal 
+    active Boolean
+    createdBy String
+    createDate LocalDate
+    updateBy String
+    updateDate LocalDate
+}
+
+entity AccountTransaction {
+	id String required 
+	type String required
+    amount BigDecimal required
+    transactionDate LocalDate required
+    status String required
+    createdBy String
+    createDate LocalDate
+    updateBy String
+    updateDate LocalDate
+}
+
+relationship OneToMany {
+	Customer to CustomerAccount
+    CustomerAccount to AccountTransaction
+}
+    

@@ -1,0 +1,30 @@
+{
+  "demoApp": {
+    "accountTransaction": {
+      "home": {
+        "title": "Account Transactions",
+        "createLabel": "创建新 Account Transaction",
+        "createOrEditLabel": "创建或编辑 Account Transaction",
+        "notFound": "No Account Transactions found"
+      },
+      "created": "Account Transaction {{ param }} 创建成功",
+      "updated": "Account Transaction {{ param }} 更新成功",
+      "deleted": "Account Transaction {{ param }} 删除成功",
+      "delete": {
+        "question": "你确定要删除 Account Transaction {{ id }} 吗？"
+      },
+      "detail": {
+        "title": "Account Transaction"
+      },
+      "type": "Type",
+      "amount": "Amount",
+      "transactionDate": "Transaction Date",
+      "status": "Status",
+      "createdBy": "Created By",
+      "createDate": "Create Date",
+      "updateBy": "Update By",
+      "updateDate": "Update Date",
+      "customerAccount": "Customer Account"
+    }
+  }
+}
