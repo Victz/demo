@@ -52,6 +52,9 @@ export const CustomerUpdate = (props: ICustomerUpdateProps) => {
     }
   };
 
+  var maxDateOfBirth  = new Date();
+  maxDateOfBirth.setDate(maxDateOfBirth.getDate() - 1);
+
   return (
     <div>
       <Row className="justify-content-center">
@@ -170,6 +173,7 @@ export const CustomerUpdate = (props: ICustomerUpdateProps) => {
                 <AvField
                   id="customer-dateOfBirth"
                   type="date"
+                  max={maxDateOfBirth}
                   className="form-control"
                   name="dateOfBirth"
                   validate={{
