@@ -1,6 +1,11 @@
 package com.company.demo.web.rest;
 
 import com.company.demo.domain.Customer;
+import com.company.demo.domain.CustomerAccount;
+import com.company.demo.model.AccountModel;
+import com.company.demo.model.BalanceRequestModel;
+import com.company.demo.model.BalanceResponseModel;
+import com.company.demo.model.CustomerModel;
 import com.company.demo.repository.CustomerRepository;
 import com.company.demo.web.rest.errors.BadRequestAlertException;
 
@@ -16,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -115,5 +121,56 @@ public class CustomerResource {
         log.debug("REST request to delete Customer : {}", id);
         customerRepository.deleteById(id);
         return ResponseEntity.noContent().headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString())).build();
+    }
+
+    /**
+     * {@code POST  /customer/balance : get balance from customer Accounts.
+     *
+     * @param requestModel provide the customer id or account id to retrieve the balance.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of customerAccounts balance.
+     */
+    @PostMapping("/customer/balance")
+    public ResponseEntity<BalanceResponseModel> queryCustomerAccountBalance(@RequestBody BalanceRequestModel requestModel) {
+        log.debug("REST request to list balance for BalanceRequestModel: {}", requestModel);
+        if(requestModel.getCustomerId() == null){
+            throw new BadRequestAlertException("customerId must not empty", ENTITY_NAME, "missingcustomerid");
+        }
+        Optional<Customer> customer =null;
+
+        if(requestModel.getAccountId() == null){
+            customer = customerRepository.queryAccountBalance(requestModel.getCustomerId());
+        }else{
+            customer = customerRepository.queryAccountBalance(requestModel.getCustomerId(),requestModel.getAccountId());
+        }
+
+        if(customer == null || customer.isEmpty()){
+            throw new BadRequestAlertException("No record found", ENTITY_NAME, "norecord");
+        }
+
+        //Map from domain to model, recommend to use mapstruct
+        List<AccountModel> accounts = new ArrayList<>();
+        for (CustomerAccount account : customer.get().getCustomerAccounts()) {
+            AccountModel accountModel = new AccountModel();
+            accountModel.setId(account.getId());
+            accountModel.setAccountName(account.getAccountName());
+            accountModel.setAccountNumber(account.getAccountNumber());
+            accountModel.setCurrency(account.getCurrency());
+            accountModel.setBalance(account.getBalance());
+            accounts.add(accountModel);
+        }
+
+        CustomerModel customerModel = new CustomerModel();
+        customerModel.setId(customer.get().getId());
+        customerModel.setCifNumber(customer.get().getCifNumber());
+        customerModel.setFirstName(customer.get().getFirstName());
+        customerModel.setMiddleName(customer.get().getMiddleName());
+        customerModel.setLastName(customer.get().getLastName());
+        customerModel.setAccountList(accounts);
+
+        BalanceResponseModel responseModel = new BalanceResponseModel();
+        responseModel.setCustomer(customerModel);
+
+        // header fields recommend to manage in filter
+        return ResponseEntity.ok().header("Applicaiton ", applicationName).body(responseModel);
     }
 }

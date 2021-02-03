@@ -52,7 +52,7 @@ export const CustomerUpdate = (props: ICustomerUpdateProps) => {
     }
   };
 
-  var maxDateOfBirth  = new Date();
+  const maxDateOfBirth  = new Date();
   maxDateOfBirth.setDate(maxDateOfBirth.getDate() - 1);
 
   return (

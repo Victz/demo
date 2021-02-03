@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom';
 import { Translate } from 'react-jhipster';
 import { connect } from 'react-redux';
 import { Row, Col, Alert } from 'reactstrap';
+import Chart from "react-apexcharts";
 
 import { IRootState } from 'app/shared/reducers';
 import { getLoginUrl } from 'app/shared/util/url-utils';
@@ -14,12 +15,35 @@ export type IHomeProp = StateProps;
 export const Home = (props: IHomeProp) => {
   const { account } = props;
 
+const options =  {
+        chart: {
+          id: "basic-bar"
+        },
+        xaxis: {
+          categories: [1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998]
+        }
+      };
+const series = [
+        {
+          name: "series-1",
+          data: [30, 40, 45, 50, 49, 60, 70, 91]
+        }
+      ];
+
   return (
     <Row>
       <Col md="9">
         <h2>
           <Translate contentKey="home.title">Welcome, Java Hipster!</Translate>
         </h2>
+        <p>
+          <Chart
+            options={options}
+            series={series}
+            type="bar"
+            width="800"
+          />
+        </p>
         <p className="lead">
           <Translate contentKey="home.subtitle">This is your homepage</Translate>
         </p>
@@ -101,3 +125,4 @@ const mapStateToProps = storeState => ({
 type StateProps = ReturnType<typeof mapStateToProps>;
 
 export default connect(mapStateToProps)(Home);
+

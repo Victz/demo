@@ -1,11 +1,14 @@
 package com.company.demo.web.rest;
 
 import com.company.demo.domain.AccountTransaction;
+import com.company.demo.domain.CustomerAccount;
 import com.company.demo.repository.AccountTransactionRepository;
+import com.company.demo.repository.CustomerAccountRepository;
 import com.company.demo.web.rest.errors.BadRequestAlertException;
 
 import io.github.jhipster.web.util.HeaderUtil;
 import io.github.jhipster.web.util.ResponseUtil;
+import java.math.BigDecimal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -16,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.validation.Valid;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -35,16 +39,19 @@ public class AccountTransactionResource {
     private String applicationName;
 
     private final AccountTransactionRepository accountTransactionRepository;
+    private final CustomerAccountRepository customerAccountRepository;
 
-    public AccountTransactionResource(AccountTransactionRepository accountTransactionRepository) {
+    public AccountTransactionResource(AccountTransactionRepository accountTransactionRepository, CustomerAccountRepository customerAccountRepository) {
         this.accountTransactionRepository = accountTransactionRepository;
+        this.customerAccountRepository = customerAccountRepository;
     }
 
     /**
      * {@code POST  /account-transactions} : Create a new accountTransaction.
      *
      * @param accountTransaction the accountTransaction to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new accountTransaction, or with status {@code 400 (Bad Request)} if the accountTransaction has already an ID.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new accountTransaction, or with status {@code 400 (Bad Request)} if the
+     * accountTransaction has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/account-transactions")
@@ -53,19 +60,40 @@ public class AccountTransactionResource {
         if (accountTransaction.getId() != null) {
             throw new BadRequestAlertException("A new accountTransaction cannot already have an ID", ENTITY_NAME, "idexists");
         }
+
         AccountTransaction result = accountTransactionRepository.save(accountTransaction);
+
+        log.debug("accountId :{}", accountTransaction.getCustomerAccount().getId());
+        Optional<CustomerAccount> account = customerAccountRepository.findById(accountTransaction.getCustomerAccount().getId());
+        if(account == null || account.isEmpty()){
+            throw new BadRequestAlertException("Account is not found", ENTITY_NAME, "accountnotfound");
+        }
+        BigDecimal currentBalance = account.get().getBalance();
+        log.debug("currentBalance : {}", currentBalance);
+        log.debug("new Amount : {}", accountTransaction.getAmount());
+        if (accountTransaction.getType().equals("WITHDRAW")) {
+            if (currentBalance.compareTo(accountTransaction.getAmount()) == 1) {
+                account.get().setBalance(currentBalance.subtract(accountTransaction.getAmount()));
+            } else {
+                throw new BadRequestAlertException("Balance is not suffient for withdraw", ENTITY_NAME, "notsuffientbalance");
+            }
+        } else if (accountTransaction.getType().equals("DEPOSIT")) {
+            account.get().setBalance(currentBalance.add(accountTransaction.getAmount()));
+        }
+        account.get().setUpdateDate(LocalDate.now());
+        customerAccountRepository.save(account.get());
+
         return ResponseEntity.created(new URI("/api/account-transactions/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
-            .body(result);
+                .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+                .body(result);
     }
 
     /**
      * {@code PUT  /account-transactions} : Updates an existing accountTransaction.
      *
      * @param accountTransaction the accountTransaction to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated accountTransaction,
-     * or with status {@code 400 (Bad Request)} if the accountTransaction is not valid,
-     * or with status {@code 500 (Internal Server Error)} if the accountTransaction couldn't be updated.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated accountTransaction, or with status {@code 400 (Bad Request)} if the
+     * accountTransaction is not valid, or with status {@code 500 (Internal Server Error)} if the accountTransaction couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/account-transactions")
@@ -76,8 +104,8 @@ public class AccountTransactionResource {
         }
         AccountTransaction result = accountTransactionRepository.save(accountTransaction);
         return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, accountTransaction.getId().toString()))
-            .body(result);
+                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, accountTransaction.getId().toString()))
+                .body(result);
     }
 
     /**
