@@ -121,6 +121,8 @@ spring:
           oidc:
             client-id: web_app
             client-secret: web_app
+  batch:
+    initialize-schema: always
 
 server:
   servlet:

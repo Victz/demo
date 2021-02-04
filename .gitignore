@@ -146,3 +146,8 @@ Desktop.ini
 # ESLint
 ######################
 .eslintcache
+
+######################
+# NetBeans
+######################
+nb-configuration.xml

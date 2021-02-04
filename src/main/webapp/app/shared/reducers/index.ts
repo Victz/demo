@@ -12,6 +12,10 @@ import customer, {
   CustomerState
 } from 'app/entities/customer/customer.reducer';
 // prettier-ignore
+import chart, {
+  ChartState
+} from 'app/modules/home/home.reducer';
+// prettier-ignore
 import customerAccount, {
   CustomerAccountState
 } from 'app/entities/customer-account/customer-account.reducer';
@@ -28,6 +32,7 @@ export interface IRootState {
   readonly administration: AdministrationState;
   readonly userManagement: UserManagementState;
   readonly customer: CustomerState;
+  readonly chart: ChartState;
   readonly customerAccount: CustomerAccountState;
   readonly accountTransaction: AccountTransactionState;
   /* jhipster-needle-add-reducer-type - JHipster will add reducer type here */
@@ -41,6 +46,7 @@ const rootReducer = combineReducers<IRootState>({
   administration,
   userManagement,
   customer,
+  chart,
   customerAccount,
   accountTransaction,
   /* jhipster-needle-add-reducer-combine - JHipster will add reducer here */

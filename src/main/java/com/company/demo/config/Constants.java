@@ -1,5 +1,7 @@
 package com.company.demo.config;
 
+import java.math.BigDecimal;
+
 /**
  * Application constants.
  */
@@ -11,6 +13,8 @@ public final class Constants {
     public static final String SYSTEM_ACCOUNT = "system";
     public static final String DEFAULT_LANGUAGE = "en";
     public static final String ANONYMOUS_USER = "anonymoususer";
+    
+    public static final BigDecimal INTEREST_RATE = new BigDecimal(0.0368);
 
     private Constants() {
     }

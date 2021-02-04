@@ -5,6 +5,7 @@ import com.company.demo.domain.CustomerAccount;
 import com.company.demo.model.AccountModel;
 import com.company.demo.model.BalanceRequestModel;
 import com.company.demo.model.BalanceResponseModel;
+import com.company.demo.model.ChartModel;
 import com.company.demo.model.CustomerModel;
 import com.company.demo.repository.CustomerRepository;
 import com.company.demo.web.rest.errors.BadRequestAlertException;
@@ -50,7 +51,8 @@ public class CustomerResource {
      * {@code POST  /customers} : Create a new customer.
      *
      * @param customer the customer to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new customer, or with status {@code 400 (Bad Request)} if the customer has already an ID.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new customer, or with status {@code 400 (Bad Request)} if the customer has already an
+     * ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("/customers")
@@ -61,17 +63,16 @@ public class CustomerResource {
         }
         Customer result = customerRepository.save(customer);
         return ResponseEntity.created(new URI("/api/customers/" + result.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
-            .body(result);
+                .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, result.getId().toString()))
+                .body(result);
     }
 
     /**
      * {@code PUT  /customers} : Updates an existing customer.
      *
      * @param customer the customer to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated customer,
-     * or with status {@code 400 (Bad Request)} if the customer is not valid,
-     * or with status {@code 500 (Internal Server Error)} if the customer couldn't be updated.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated customer, or with status {@code 400 (Bad Request)} if the customer is not valid, or
+     * with status {@code 500 (Internal Server Error)} if the customer couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/customers")
@@ -82,8 +83,8 @@ public class CustomerResource {
         }
         Customer result = customerRepository.save(customer);
         return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, customer.getId().toString()))
-            .body(result);
+                .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, customer.getId().toString()))
+                .body(result);
     }
 
     /**
@@ -132,18 +133,18 @@ public class CustomerResource {
     @PostMapping("/customer/balance")
     public ResponseEntity<BalanceResponseModel> queryCustomerAccountBalance(@RequestBody BalanceRequestModel requestModel) {
         log.debug("REST request to list balance for BalanceRequestModel: {}", requestModel);
-        if(requestModel.getCustomerId() == null){
+        if (requestModel.getCustomerId() == null) {
             throw new BadRequestAlertException("customerId must not empty", ENTITY_NAME, "missingcustomerid");
         }
-        Optional<Customer> customer =null;
+        Optional<Customer> customer = null;
 
-        if(requestModel.getAccountId() == null){
+        if (requestModel.getAccountId() == null) {
             customer = customerRepository.queryAccountBalance(requestModel.getCustomerId());
-        }else{
-            customer = customerRepository.queryAccountBalance(requestModel.getCustomerId(),requestModel.getAccountId());
+        } else {
+            customer = customerRepository.queryAccountBalance(requestModel.getCustomerId(), requestModel.getAccountId());
         }
 
-        if(customer == null || customer.isEmpty()){
+        if (customer == null || customer.isEmpty()) {
             throw new BadRequestAlertException("No record found", ENTITY_NAME, "norecord");
         }
 
@@ -172,5 +173,17 @@ public class CustomerResource {
 
         // header fields recommend to manage in filter
         return ResponseEntity.ok().header("Applicaiton ", applicationName).body(responseModel);
+    }
+
+    /**
+     * {@code GET  /customers/chart} : Query Customer DateOfBirth chart
+     *
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the ChartModel, or with status {@code 404 (Not Found)}.
+     */
+    @GetMapping("/customer/chart")
+    public List<ChartModel> getChart() {
+        log.debug("REST request to query Customer DateOfBirth chart");
+        List<ChartModel> chartModels = customerRepository.getChart();
+        return customerRepository.getChart();
     }
 }

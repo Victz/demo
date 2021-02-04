@@ -12,7 +12,7 @@ import java.util.Optional;
  */
 @SuppressWarnings("unused")
 @Repository
-public interface CustomerRepository extends JpaRepository<Customer, Long> {
+public interface CustomerRepository extends JpaRepository<Customer, Long>, CustomerRepositoryCustom {
 
     @Query("SELECT c FROM Customer c left join fetch c.customerAccounts a WHERE c.id = ?1")
     Optional<Customer> queryAccountBalance(Long customerId);

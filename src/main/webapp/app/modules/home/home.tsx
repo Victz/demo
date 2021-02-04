@@ -1,6 +1,6 @@
 import './home.scss';
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Translate } from 'react-jhipster';
 import { connect } from 'react-redux';
@@ -9,24 +9,30 @@ import Chart from "react-apexcharts";
 
 import { IRootState } from 'app/shared/reducers';
 import { getLoginUrl } from 'app/shared/util/url-utils';
+import {getEntities} from "app/modules/home/home.reducer";
+import { IChart } from 'app/shared/layout/home/chart';
 
-export type IHomeProp = StateProps;
+export interface IHomeProp extends StateProps, DispatchProps{}
 
 export const Home = (props: IHomeProp) => {
-  const { account } = props;
+  useEffect(() => {
+    props.getEntities();
+  }, []);
 
-const options =  {
+  const { account, isAuthenticated, chartList, loading } = props;
+
+  const options =  {
         chart: {
           id: "basic-bar"
         },
         xaxis: {
-          categories: [1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998]
+          categories: chartList.map(({ category }) => category)
         }
       };
 const series = [
         {
           name: "series-1",
-          data: [30, 40, 45, 50, 49, 60, 70, 91]
+          data: chartList.map(({ data }) => data)
         }
       ];
 
@@ -36,14 +42,6 @@ const series = [
         <h2>
           <Translate contentKey="home.title">Welcome, Java Hipster!</Translate>
         </h2>
-        <p>
-          <Chart
-            options={options}
-            series={series}
-            type="bar"
-            width="800"
-          />
-        </p>
         <p className="lead">
           <Translate contentKey="home.subtitle">This is your homepage</Translate>
         </p>
@@ -54,6 +52,13 @@ const series = [
                 You are logged in as user {account.login}.
               </Translate>
             </Alert>
+            <Chart
+              options={options}
+              series={series}
+              type="bar"
+              width="800"
+            />
+            )
           </div>
         ) : (
           <div>
@@ -117,12 +122,19 @@ const series = [
   );
 };
 
-const mapStateToProps = storeState => ({
+const mapStateToProps = (storeState: IRootState) => ({
   account: storeState.authentication.account,
   isAuthenticated: storeState.authentication.isAuthenticated,
+  chartList: storeState.chart.entities,
+  loading: storeState.chart.loading,
 });
 
-type StateProps = ReturnType<typeof mapStateToProps>;
+const mapDispatchToProps = {
+  getEntities,
+};
 
-export default connect(mapStateToProps)(Home);
+type StateProps = ReturnType<typeof mapStateToProps>;
+type DispatchProps = typeof mapDispatchToProps;
+
+export default connect(mapStateToProps, mapDispatchToProps)(Home);
 
